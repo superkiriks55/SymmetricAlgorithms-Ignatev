@@ -13,8 +13,8 @@ namespace SymmetricAlgorithms_Ignatev.TEST
         public void Encrypt(FormData formdata,CipherMode  mode, string extention,SymmetricAlgorithm SymmetricAlgorithm)
         {
             var salt = AlgorithmHelpers.GenerateRandomSalt();
-            string encryptedFilePath = AlgorithmHelpers
-                .GetOutputFilePathExtension(formdata.FilePath, formdata.FilePath + extention);
+            SymmetricAlgorithm.SetAlgKey(formdata.Password, salt);
+            string encryptedFilePath = formdata.FilePath + extention;
 
             using (SymmetricAlgorithm algorithm = SymmetricAlgorithm)
             using (var outputStream = new FileStream(encryptedFilePath, FileMode.Create))
@@ -42,18 +42,16 @@ namespace SymmetricAlgorithms_Ignatev.TEST
         }
         public void Decrypt(FormData formdata, CipherMode mode, string extention, SymmetricAlgorithm SymmetricAlgorithm)
             {
-            byte[] passwordBytes = Encoding.UTF8.GetBytes(formdata.Password);
             byte[] salt = new byte[32];
-            string encryptedFilePath = AlgorithmHelpers
-                .GetOutputFilePathExtension(formdata.FilePath, formdata.FilePath + extention);
+            string encryptedFilePath = formdata.FilePath + extention;
 
             using (var inputStream = new FileStream(encryptedFilePath, FileMode.Open))
             {
                 inputStream.Read(salt, 0, salt.Length);
-
+                SymmetricAlgorithm.SetAlgKey(formdata.Password, salt); // вот тут надо было солить
                 using (var algorithm = SymmetricAlgorithm)
                 using (var cryptoStream = new CryptoStream(inputStream, algorithm.CreateDecryptor(), CryptoStreamMode.Read))
-                using (var outputStream = new FileStream(encryptedFilePath, FileMode.Create))
+                using (var outputStream = new FileStream(formdata.FilePath, FileMode.Create))
                 {
                     byte[] buffer = new byte[1024];
                     int read;

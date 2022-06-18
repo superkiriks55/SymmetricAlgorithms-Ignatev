@@ -28,11 +28,20 @@ namespace SymmetricAlgorithms_Ignatev.TEST
             return data;
         }
 
-        /// <summary>
-        /// Путь и расширение для выходных файлов
-        /// </summary>
-        public static Func<string, string, string> GetOutputFilePathExtension = (string path, string extension)
-            => path + extension;
+
+        public static void SetAlgKey(this SymmetricAlgorithm algorithm, string password, byte[] salt)
+        {
+            var key = new Rfc2898DeriveBytes(password, salt, 50000);
+            algorithm.Key = key.GetBytes(algorithm.KeySize / 8);
+            algorithm.IV = key.GetBytes(algorithm.BlockSize / 8);
+        }
+
+        public static void SetAlgProps(this SymmetricAlgorithm algorithm, int keySize, int blockSize)
+        {
+            algorithm.KeySize = keySize;
+            algorithm.BlockSize = blockSize;
+            algorithm.Padding = PaddingMode.PKCS7;
+        }
 
         #region Режимы работы алгоритмов
 
